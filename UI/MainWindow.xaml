@@ -1,0 +1,164 @@
+<Window x:Class="MixLane.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:MixLane.UI"
+        Title="MixLane" Width="1320" Height="820" MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterScreen" AllowDrop="True">
+    <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" x:Name="MainMenu">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New mix" InputGestureText="Ctrl+N" Click="NewProject_Click"/>
+                    <MenuItem Header="_Open mix..." InputGestureText="Ctrl+O" Click="OpenProject_Click"/>
+                    <MenuItem Header="_Save mix" InputGestureText="Ctrl+S" Click="SaveProject_Click"/>
+                    <MenuItem Header="Save mix _as..." InputGestureText="Ctrl+Shift+S" Click="SaveProjectAs_Click"/>
+                    <Separator/>
+                    <MenuItem Header="_Add audio or video files..." InputGestureText="Ctrl+I" Click="Import_Click"/>
+                    <MenuItem Header="_Export finished mix as audio file..." InputGestureText="Ctrl+E" Click="Export_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Se_ttings..." Click="Settings_Click"/>
+                    <Separator/>
+                    <MenuItem Header="E_xit" Click="Exit_Click"/>
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem x:Name="UndoMenu" Header="_Undo" InputGestureText="Ctrl+Z" Click="Undo_Click"/>
+                    <MenuItem x:Name="RedoMenu" Header="_Redo" InputGestureText="Ctrl+Y" Click="Redo_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="SplitMenu" Header="Cut selected piece at playhead" InputGestureText="S" Click="Split_Click"/>
+                    <MenuItem Header="Duplicate selected" InputGestureText="Ctrl+D" Click="Duplicate_Click"/>
+                    <MenuItem Header="Delete selected" InputGestureText="Del" Click="Delete_Click"/>
+                    <MenuItem Header="Select all pieces" InputGestureText="Ctrl+A" Click="SelectAll_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="CrossfadeMenu" Header="Blend into next piece (crossfade)" InputGestureText="X" Click="Crossfade_Click"/>
+                    <MenuItem x:Name="AddFxMenu" Header="Add effect to selected piece"/>
+                    <Separator/>
+                    <MenuItem Header="Add empty lane" InputGestureText="Ctrl+T" Click="AddTrack_Click"/>
+                    <MenuItem Header="Remove selected lane" Click="RemoveTrack_Click"/>
+                </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem x:Name="ModeMenu" Header="Use industry-standard terms" IsCheckable="True" Click="ToggleMode_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Zoom in" InputGestureText="Ctrl + =" Click="ZoomIn_Click"/>
+                    <MenuItem Header="Zoom out" InputGestureText="Ctrl + -" Click="ZoomOut_Click"/>
+                    <MenuItem Header="Fit whole mix on screen" InputGestureText="Ctrl + 0" Click="ZoomFit_Click"/>
+                    <MenuItem Header="Zoom to single samples at playhead" InputGestureText="Ctrl + 9" Click="ZoomSample_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Collapse all effect lanes" Click="CollapseFx_Click"/>
+                    <MenuItem Header="Expand all effect lanes" Click="ExpandFx_Click"/>
+                    <MenuItem x:Name="BottomPanelMenu" Header="Show details panel" IsCheckable="True" IsChecked="True" Click="ToggleBottom_Click"/>
+                </MenuItem>
+                <MenuItem Header="_Help">
+                    <MenuItem Header="Keyboard shortcuts" Click="Shortcuts_Click"/>
+                    <MenuItem Header="About MixLane" Click="About_Click"/>
+                </MenuItem>
+            </Menu>
+
+            <!-- Toolbar: only what you use constantly. Everything else lives in menus and right-click. -->
+            <Border DockPanel.Dock="Top" Background="{StaticResource Bg2}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1" Padding="8,5">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <Button x:Name="AddBtn" Content="+ Add sounds" Click="Import_Click" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                        <Button x:Name="GoStartBtn" Content="⏮" Click="GoStart_Click" Width="34" Margin="0,0,4,0" FontSize="14"/>
+                        <Button x:Name="PlayBtn" Content="▶  Play" Click="Play_Click" Width="86" Margin="0,0,4,0" FontWeight="SemiBold"/>
+                        <Button x:Name="StopBtn" Content="■  Stop" Click="Stop_Click" Width="74" Margin="0,0,14,0"/>
+                        <Border Background="{StaticResource Bg}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="4" Padding="8,2" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="PositionBox" Width="96" FontFamily="Consolas" FontSize="14" BorderThickness="0" Background="Transparent" Text="0:00.000" KeyDown="PositionBox_KeyDown" ToolTip="Type a time (like 1:23.456 or 4500ms or 96000smp) and press Enter to jump there."/>
+                                <TextBlock x:Name="PositionSamples" Foreground="{StaticResource FgDim}" FontSize="11" VerticalAlignment="Center" Margin="4,0,0,0" Text="sample 0"/>
+                            </StackPanel>
+                        </Border>
+                        <ToggleButton x:Name="LoopBtn" Content="Loop" Margin="10,0,0,0" Click="Loop_Click" ToolTip="Repeat the mix from the start when it reaches the end."/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
+                        <ToggleButton x:Name="SnapBtn" Content="Stick to edges" Margin="0,0,10,0" Click="Snap_Click"/>
+                        <Button Content="−" Click="ZoomOut_Click" Width="30" ToolTip="Zoom out (Ctrl + -)"/>
+                        <Button Content="+" Click="ZoomIn_Click" Width="30" Margin="4,0,0,0" ToolTip="Zoom in (Ctrl + =)"/>
+                        <Button Content="Fit" Click="ZoomFit_Click" Margin="4,0,10,0" ToolTip="Fit the whole mix on screen (Ctrl + 0)"/>
+                        <ToggleButton x:Name="ModeBtn" Content="Plain language" Click="ToggleMode_Click" ToolTip="Switch between plain-language labels and industry-standard terms. Same controls, different words."/>
+                    </StackPanel>
+                    <Grid/>
+                </DockPanel>
+            </Border>
+
+            <StatusBar DockPanel.Dock="Bottom" Height="26">
+                <StatusBarItem>
+                    <TextBlock x:Name="HintText" Foreground="{StaticResource FgDim}" Text="Add a sound to get started."/>
+                </StatusBarItem>
+                <StatusBarItem HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock x:Name="ZoomText" Foreground="{StaticResource FgDim}" Margin="0,0,16,0"/>
+                        <TextBlock x:Name="MeterText" Foreground="{StaticResource FgDim}" Margin="0,0,16,0" FontFamily="Consolas"/>
+                        <TextBlock x:Name="InfoText" Foreground="{StaticResource FgDim}"/>
+                    </StackPanel>
+                </StatusBarItem>
+            </StatusBar>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="BottomRow" Height="270"/>
+                </Grid.RowDefinitions>
+
+                <!-- Lanes -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="230"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Column="0" Grid.Row="0" Background="{StaticResource Bg2}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0" ClipToBounds="True">
+                        <Grid>
+                            <Border Height="28" VerticalAlignment="Top" Background="#2B2D33" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1">
+                                <DockPanel Margin="6,0">
+                                    <TextBlock x:Name="LanesHeaderText" Text="Lanes" VerticalAlignment="Center" Foreground="{StaticResource FgDim}"/>
+                                    <Button Content="+ lane" HorizontalAlignment="Right" Padding="6,1" MinHeight="20" FontSize="11" Click="AddTrack_Click" ToolTip="Add an empty lane (Ctrl+T)"/>
+                                </DockPanel>
+                            </Border>
+                            <StackPanel x:Name="LaneHeaders" Margin="0,28,0,0">
+                                <StackPanel.RenderTransform>
+                                    <TranslateTransform x:Name="LaneHeadersOffset"/>
+                                </StackPanel.RenderTransform>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Column="1" Grid.Row="0">
+                        <ui:TimelineControl x:Name="Timeline"/>
+                        <ui:PlayheadOverlay x:Name="Playhead"/>
+                    </Grid>
+                    <ScrollBar Grid.Column="2" Grid.Row="0" x:Name="VScroll" Orientation="Vertical" Width="14" Scroll="VScroll_Scroll" Margin="0,28,0,0"/>
+                    <ScrollBar Grid.Column="1" Grid.Row="1" x:Name="HScroll" Orientation="Horizontal" Height="14" Scroll="HScroll_Scroll"/>
+                </Grid>
+
+                <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="{StaticResource Border}" ResizeBehavior="PreviousAndNext"/>
+
+                <!-- Details: the selected piece's exact numbers and effects, or the whole-mix sound. -->
+                <TabControl Grid.Row="2" x:Name="BottomTabs" Margin="0" Padding="0">
+                    <TabItem x:Name="ClipTab" Header="Selected piece">
+                        <ui:ClipInspector x:Name="Inspector"/>
+                    </TabItem>
+                    <TabItem x:Name="MasterTab" Header="Whole mix sound">
+                        <ui:MasterPanel x:Name="Master"/>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </DockPanel>
+
+        <!-- Busy overlay for long operations (decoding, converting video, exporting) -->
+        <Grid x:Name="Busy" Visibility="Collapsed" Background="#B0141518">
+            <Border Background="{StaticResource Bg2}" BorderBrush="{StaticResource Border}" BorderThickness="1" CornerRadius="8" Padding="24,18" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="420">
+                <StackPanel>
+                    <TextBlock x:Name="BusyText" FontSize="14" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                    <ProgressBar x:Name="BusyBar" Height="14" Minimum="0" Maximum="1"/>
+                    <Button x:Name="BusyCancel" Content="Cancel" HorizontalAlignment="Right" Margin="0,12,0,0" Click="BusyCancel_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
